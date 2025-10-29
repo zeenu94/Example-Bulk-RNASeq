@@ -46,12 +46,11 @@ meta_rna <- meta_rna[meta_rna$specimenID %in% common_samples, ]
 meta_rna <- meta_rna[match(colnames(bulk_expr), meta_rna$specimenID), ]
 rownames(meta_rna) <- meta_rna$specimenID
 
-meta_rna <- meta_rna[, c("specimenID", "AD", "msex", "pmi", "age_death","RIN",  "tissue","TL_median","libraryBatch")]
+meta_rna <- meta_rna[, c("specimenID", "AD", "msex", "pmi", "age_death","RIN",  "tissue","libraryBatch")]
 meta_rna <- meta_rna[complete.cases(meta_rna), ]
 bulk_expr <- bulk_expr[,colnames(bulk_expr) %in% meta_rna$specimenID]
 
 
-meta_rna$TL_median   <- relevel(factor(meta_rna$TL_median), ref = "Short")
 meta_rna$msex        <- factor(meta_rna$msex)
 
 meta_rna$libraryBatch<- factor(meta_rna$libraryBatch)
@@ -60,7 +59,7 @@ meta_rna$AD <- factor(meta_rna$AD,levels = c(0,1))
 dds <- DESeqDataSetFromMatrix(
   countData = bulk_expr_subset,
   colData   = meta_rna,
-  design    = ~ AD +  msex + age_death + RIN + TL_median + libraryBatch
+  design    = ~ AD +  msex + age_death + RIN  + libraryBatch
 )
 
 # Filter very-low counts (DESeq2 suggestion)
@@ -69,7 +68,7 @@ dds <- dds[keep_genes, ]
 dds <- DESeq(dds)
 
 ## 7) TL effect: Long vs Short
-res <- results(dds, contrast = c("TL_median","Long","Short"))
+res <- results(dds, contrast = c("AD","1","0"))
 res$gene <- rownames(res)
 res <- res[order(res$padj), ]
 res
